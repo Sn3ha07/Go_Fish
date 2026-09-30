@@ -34,45 +34,42 @@ export function getFishByNfcUid(uid: string): FishSpecies | undefined {
 }
 
 export function getFishForTask(task: Task): FishSpecies {
-  // 1. Explicit user assignment
-  if (task.assignedFishSpeciesId) {
-    const matched = FISH_SPECIES.find(f => f.id === task.assignedFishSpeciesId);
-    if (matched) return matched;
-    if (task.assignedFishSpeciesId === 'puffer') return getFishById('longfish');
-    if (task.assignedFishSpeciesId === 'clown') return getFishById('shark');
-  }
-
-  // 2. Multi-Action Checklist / Staged Tasks -> Boba the Jellyfish
-  if (task.subtasks && task.subtasks.length > 0) {
-    return getFishById('jelly');
-  }
-
-  // 3. Urgent Deadlines (due date set) -> Finn the Bluefin
-  if (task.dueDate) {
-    return getFishById('bluefin');
-  }
-
-  // 4. Hard / High-Stakes / Big Bites / Creative -> Chomp the Shark
+  // 1. Both Long & Hard tasks, High-Stakes / Hard challenges, and Creative projects -> CHOMP (The Shark)
+  // Rule: A long task is a noodle, but when it is hard (high priority) it turns into Chomp!
   if (task.importance === 'high' || task.category === 'creative') {
     return getFishById('shark');
   }
 
-  // 5. Deep Marathon Immersion (>= 45m) -> Moby the Whale
-  if (task.estimatedMinutes >= 45) {
-    return getFishById('whale');
+  // 2. Explicit user assignment (when not hard)
+  if (task.assignedFishSpeciesId) {
+    if (task.assignedFishSpeciesId === 'clown' || task.assignedFishSpeciesId === 'shark') {
+      return getFishById('shark');
+    }
+    const matched = FISH_SPECIES.find(f => f.id === task.assignedFishSpeciesId);
+    if (matched && matched.id !== 'longfish') return matched;
   }
 
-  // 6. Extended Duration Tasks (25m - 44m) -> Noodle the Long Fish
+  // 3. Multi-Action Checklist / Staged Tasks -> Boba the Jellyfish
+  if (task.subtasks && task.subtasks.length > 0) {
+    return getFishById('jelly');
+  }
+
+  // 4. Urgent Deadlines (due date set) -> Finn the Bluefin
+  if (task.dueDate) {
+    return getFishById('bluefin');
+  }
+
+  // 5. Extended / Long Duration Tasks (25m - 60m+ when medium or low) -> Noodle the Long Fish
   if (task.estimatedMinutes >= 25) {
     return getFishById('longfish');
   }
 
-  // 7. Quick Sprint (<= 15m) -> Goldie
+  // 6. Quick Sprint (<= 15m) -> Goldie
   if (task.estimatedMinutes <= 15) {
     return getFishById('goldie');
   }
 
-  // 8. Study / structured category default -> Boba
+  // 7. Study / structured category default -> Boba
   if (task.category === 'study') {
     return getFishById('jelly');
   }

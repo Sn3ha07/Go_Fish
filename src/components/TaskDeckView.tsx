@@ -139,7 +139,8 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
         estimatedMinutes: Number(form.estimatedMinutes),
         importance: form.importance,
         category: form.category,
-        subtasks: form.subtasks.length > 0 ? form.subtasks : undefined
+        subtasks: form.subtasks.length > 0 ? form.subtasks : undefined,
+        assignedFishSpeciesId: form.importance === 'high' ? 'shark' : undefined
       });
     } else {
       onAddTask({
@@ -150,7 +151,8 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
         importance: form.importance,
         category: form.category,
         completed: false,
-        subtasks: form.subtasks.length > 0 ? form.subtasks : undefined
+        subtasks: form.subtasks.length > 0 ? form.subtasks : undefined,
+        assignedFishSpeciesId: form.importance === 'high' ? 'shark' : undefined
       });
     }
 

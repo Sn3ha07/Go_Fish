@@ -76,12 +76,11 @@ export const INITIAL_TASKS: Task[] = [
     title: 'Extended deep cleanup & system backup',
     description: 'Long multi-step session to organize project archives.',
     estimatedMinutes: 35,
-    importance: 'high',
+    importance: 'medium',
     category: 'work',
     completed: false,
     createdAt: new Date().toISOString(),
-    caughtCount: 0,
-    assignedFishSpeciesId: 'longfish'
+    caughtCount: 0
   }
 ];
 
@@ -138,9 +137,10 @@ export const INITIAL_JOURNAL: CaughtRecord[] = [
   }
 ];
 
-function normalizeFishId(id?: string): string | undefined {
+function normalizeFishId(id?: string, importance?: string): string | undefined {
   if (id === 'clown') return 'shark';
-  if (id === 'puffer') return 'longfish';
+  if (id === 'puffer') return importance === 'high' ? 'shark' : 'longfish';
+  if (id === 'longfish' && importance === 'high') return 'shark';
   return id;
 }
 
@@ -155,7 +155,7 @@ export function loadTasks(): Task[] {
         const parsed: Task[] = JSON.parse(legacy);
         const migrated = parsed.map(t => ({
           ...t,
-          assignedFishSpeciesId: normalizeFishId(t.assignedFishSpeciesId)
+          assignedFishSpeciesId: normalizeFishId(t.assignedFishSpeciesId, t.importance)
         }));
         saveTasks(migrated);
         return migrated;
@@ -166,7 +166,7 @@ export function loadTasks(): Task[] {
     const parsed: Task[] = JSON.parse(raw);
     return parsed.map(t => ({
       ...t,
-      assignedFishSpeciesId: normalizeFishId(t.assignedFishSpeciesId)
+      assignedFishSpeciesId: normalizeFishId(t.assignedFishSpeciesId, t.importance)
     }));
   } catch {
     return INITIAL_TASKS;
