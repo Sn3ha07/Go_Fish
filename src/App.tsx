@@ -25,6 +25,7 @@ import {
   INITIAL_JOURNAL
 } from './utils/storage';
 import { selectCatchTask, getFishForTask, CatchSelectionResult } from './data/fishCatalog';
+import { isChompTask } from './utils/chompLinks';
 import { isWebNfcSupported, startRealNfcScan, stopNfcScan } from './utils/nfc';
 import { playWaterSplash, playReelClick } from './utils/audio';
 
@@ -122,6 +123,88 @@ export default function App() {
 
     return () => clearInterval(interval);
   }, [tasks]);
+
+  // Deep-linking: Support distinct Chomp task URLs (e.g. ?chomp=t-4 or /chomp/t-4)
+  // When visited, the app goes directly to the Chomp task without showing the dashboard.
+  useEffect(() => {
+    const handleChompDeepLink = () => {
+      try {
+        const url = new URL(window.location.href);
+        const chompParam = url.searchParams.get('chomp') || url.searchParams.get('shark');
+        const hash = window.location.hash;
+        const pathname = window.location.pathname;
+
+        let targetId: string | null = null;
+        let isChompDirect = false;
+
+        if (chompParam) {
+          isChompDirect = true;
+          if (chompParam !== 'true' && chompParam !== '1') {
+            targetId = chompParam;
+          }
+        } else if (pathname.includes('/chomp')) {
+          isChompDirect = true;
+          const match = pathname.match(/\/chomp\/?([a-zA-Z0-9_-]*)/);
+          if (match && match[1]) {
+            targetId = match[1];
+          }
+        } else if (hash.includes('chomp')) {
+          isChompDirect = true;
+          const match = hash.match(/chomp[\/=]([a-zA-Z0-9_-]+)/);
+          if (match && match[1]) {
+            targetId = match[1];
+          }
+        }
+
+        if (isChompDirect) {
+          let chompTask: Task | undefined;
+          if (targetId) {
+            chompTask = tasks.find(t => t.id === targetId);
+          }
+          if (!chompTask) {
+            // Find first uncompleted Chomp task or any Chomp task
+            chompTask = tasks.find(t => !t.completed && isChompTask(t)) || tasks.find(t => isChompTask(t));
+          }
+
+          if (chompTask) {
+            const fish = getFishForTask(chompTask);
+            setFocusedTask({ task: chompTask, fish });
+            // Reflect standard query param in address bar
+            const currentUrl = new URL(window.location.href);
+            if (currentUrl.searchParams.get('chomp') !== chompTask.id) {
+              currentUrl.searchParams.set('chomp', chompTask.id);
+              window.history.replaceState({ chompTaskId: chompTask.id }, '', currentUrl.toString());
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to parse chomp deep link', err);
+      }
+    };
+
+    handleChompDeepLink();
+    window.addEventListener('popstate', handleChompDeepLink);
+    return () => window.removeEventListener('popstate', handleChompDeepLink);
+  }, [tasks]);
+
+  // Keep URL updated when focusedTask changes
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      if (focusedTask && isChompTask(focusedTask.task)) {
+        if (url.searchParams.get('chomp') !== focusedTask.task.id) {
+          url.searchParams.set('chomp', focusedTask.task.id);
+          window.history.replaceState({ chompTaskId: focusedTask.task.id }, '', url.toString());
+        }
+      } else if (!focusedTask && url.searchParams.has('chomp')) {
+        url.searchParams.delete('chomp');
+        const cleanUrl = url.pathname + (url.search ? url.search : '') + (url.hash ? url.hash : '');
+        window.history.replaceState({}, '', cleanUrl);
+      }
+    } catch (e) {
+      // Ignore if URL modification fails in some iframe environments
+    }
+  }, [focusedTask]);
 
   // Audio toggle
   const handleToggleSound = useCallback(() => {

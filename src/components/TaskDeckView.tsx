@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Task, ImportanceLevel, TaskCategory, PrioritizationSettings, SubTask } from '../types';
 import { getFishForTask } from '../data/fishCatalog';
 import { PixelFish } from './PixelFish';
-import { Search, CheckCircle, Circle, MoreVertical, Edit3, Trash2, Play, Clock, X, Calendar, Plus, ListOrdered } from 'lucide-react';
+import { Search, CheckCircle, Circle, MoreVertical, Edit3, Trash2, Play, Clock, X, Calendar, Plus, ListOrdered, Link2, Sparkles } from 'lucide-react';
 import { playTaskComplete, playReelClick } from '../utils/audio';
+import { copyChompDirectUrl, isChompTask } from '../utils/chompLinks';
 
 interface TaskDeckViewProps {
   tasks: Task[];
@@ -35,6 +36,16 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [activeMenuTaskId, setActiveMenuTaskId] = useState<string | null>(null);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState<string>('');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const handleCopyChompLink = async (taskId: string) => {
+    const ok = await copyChompDirectUrl(taskId);
+    if (ok) {
+      playReelClick(soundEnabled);
+      setToastMessage('🦈 Copied distinct Chomp URL! Visiting this link goes directly to this task, bypassing the dashboard.');
+      setTimeout(() => setToastMessage(null), 4000);
+    }
+  };
 
   // Sync external add trigger from Navbar
   React.useEffect(() => {
@@ -162,6 +173,22 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
   return (
     <div className="space-y-2.5 max-w-2xl mx-auto select-none p-1 sm:p-2">
       
+      {/* Toast Notification for Chomp Direct Link Copy */}
+      {toastMessage && (
+        <div className="p-2.5 rounded-xl bg-[#091524] border-2 border-[#2563eb] text-xs font-sans text-white flex items-center justify-between gap-2 shadow-lg animate-pop">
+          <div className="flex items-center gap-2 min-w-0">
+            <Sparkles className="w-4 h-4 text-[#f8b800] shrink-0" />
+            <span className="leading-snug">{toastMessage}</span>
+          </div>
+          <button
+            onClick={() => setToastMessage(null)}
+            className="text-stone-400 hover:text-white p-1 shrink-0 cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Streamlined Search & Filter Controls */}
       <div className="gb-window p-2.5 space-y-2 rounded-xl shadow-sm">
         
@@ -263,6 +290,20 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
                           {completedSubtasksCount}/{task.subtasks!.length} ACTIONS
                         </span>
                       )}
+                      {isChompTask(task) && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopyChompLink(task.id);
+                          }}
+                          className="px-1.5 py-0.2 rounded bg-[#2563eb]/20 hover:bg-[#2563eb]/40 border border-[#2563eb]/50 text-[#60a5fa] hover:text-white font-pixel text-[7.5px] uppercase shrink-0 flex items-center gap-1 cursor-pointer transition-colors"
+                          title="Copy distinct link that opens straight to this Chomp task"
+                        >
+                          <Link2 className="w-2.5 h-2.5" />
+                          <span>CHOMP URL</span>
+                        </button>
+                      )}
                     </div>
 
                     {/* Metadata line */}
@@ -320,7 +361,20 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
                         className="fixed inset-0 z-40" 
                         onClick={() => setActiveMenuTaskId(null)} 
                       />
-                      <div className="absolute right-0 top-full mt-1 w-32 gb-window rounded-xl shadow-2xl py-1 z-50 animate-pop text-left">
+                      <div className="absolute right-0 top-full mt-1 w-38 gb-window rounded-xl shadow-2xl py-1 z-50 animate-pop text-left">
+                        {isChompTask(task) && (
+                          <button
+                            onClick={() => {
+                              setActiveMenuTaskId(null);
+                              handleCopyChompLink(task.id);
+                            }}
+                            className="w-full px-3 py-1.5 text-xs text-[#60a5fa] hover:text-white hover:bg-[#1a2b3d] flex items-center gap-2 transition-colors font-sans font-semibold border-b border-[#2b3e54]/60"
+                          >
+                            <Link2 className="w-3.5 h-3.5 text-[#60a5fa]" />
+                            <span>Copy Chomp Link</span>
+                          </button>
+                        )}
+
                         <button
                           onClick={() => handleOpenEdit(task)}
                           className="w-full px-3 py-1.5 text-xs text-stone-200 hover:text-[#f8b800] hover:bg-[#1a2b3d] flex items-center gap-2 transition-colors font-sans font-semibold"

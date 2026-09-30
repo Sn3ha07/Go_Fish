@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Task, FishSpecies, FishPosition } from '../types';
 import { FISH_SPECIES, getFishForTask } from '../data/fishCatalog';
 import { PixelFish } from './PixelFish';
-import { ListPlus, Wifi, ArrowRight, Sparkles, Compass, Radio } from 'lucide-react';
+import { ListPlus, Wifi, ArrowRight, Sparkles, Compass, Radio, Link2, Check } from 'lucide-react';
+import { copyChompDirectUrl, getChompDirectUrl } from '../utils/chompLinks';
 
 interface PondViewProps {
   tasks: Task[];
@@ -29,6 +30,15 @@ export const PondView: React.FC<PondViewProps> = ({
 }) => {
   const activeTasks = tasks.filter(t => !t.completed);
   const [selectedSpeciesId, setSelectedSpeciesId] = useState<string>(FISH_SPECIES[0].id);
+  const [copiedChompId, setCopiedChompId] = useState<string | null>(null);
+
+  const handleCopyChompTaskLink = async (taskId: string) => {
+    const ok = await copyChompDirectUrl(taskId);
+    if (ok) {
+      setCopiedChompId(taskId);
+      setTimeout(() => setCopiedChompId(null), 2500);
+    }
+  };
 
   const selectedFish = FISH_SPECIES.find(f => f.id === selectedSpeciesId) || FISH_SPECIES[0];
 
@@ -326,18 +336,46 @@ export const PondView: React.FC<PondViewProps> = ({
                 {speciesTasks.map(t => (
                   <div
                     key={t.id}
-                    className="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-[#0e1722] border border-[#1e2d3e] text-xs font-sans"
+                    className="flex items-center justify-between gap-1.5 p-1.5 rounded-lg bg-[#0e1722] border border-[#1e2d3e] text-xs font-sans"
                   >
-                    <span className="truncate text-stone-200 font-medium">{t.title}</span>
-                    <button
-                      onClick={() => onSelectTask(t)}
-                      className="gb-button px-2 py-0.5 text-[8px] font-pixel text-[#f8b800] rounded shrink-0 cursor-pointer"
-                    >
-                      FOCUS
-                    </button>
+                    <span className="truncate text-stone-200 font-medium flex-1">{t.title}</span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {selectedFish.id === 'shark' && (
+                        <button
+                          type="button"
+                          onClick={() => handleCopyChompTaskLink(t.id)}
+                          className="gb-button px-1.5 py-0.5 text-[7.5px] font-pixel text-[#60a5fa] rounded flex items-center gap-0.5 cursor-pointer"
+                          title="Copy direct URL to bypass dashboard"
+                        >
+                          {copiedChompId === t.id ? (
+                            <>
+                              <Check className="w-2.5 h-2.5 text-[#78d8a0]" />
+                              <span className="text-[#78d8a0]">COPIED</span>
+                            </>
+                          ) : (
+                            <>
+                              <Link2 className="w-2.5 h-2.5" />
+                              <span>URL</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => onSelectTask(t)}
+                        className="gb-button px-2 py-0.5 text-[8px] font-pixel text-[#f8b800] rounded cursor-pointer"
+                      >
+                        FOCUS
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
+              {selectedFish.id === 'shark' && (
+                <div className="p-1.5 rounded bg-[#091524] border border-[#2563eb]/40 text-[9px] font-mono text-[#93c5fd] flex items-center justify-between gap-1 mt-1">
+                  <span className="truncate">Direct URL: ?chomp={speciesTasks[0].id}</span>
+                  <span className="font-pixel text-[7.5px] text-[#f8b800] uppercase shrink-0">Skips Dashboard</span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-[11px] text-stone-400 font-sans italic pt-1 border-t border-[#1a293a]">
