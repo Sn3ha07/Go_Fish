@@ -38,11 +38,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             setIsMenuOpen(false);
           }}
           className="flex items-center gap-1.5 text-left focus:outline-none rounded py-0.5 px-1 group shrink-0 min-w-0"
-          aria-label="Little Catch Home"
+          aria-label="Go Fish Home"
         >
           <PixelFish type="goldie" size="sm" animated={true} />
-          <span className="font-pixel text-[8px] sm:text-[9px] text-[#f8b800] tracking-wider drop-shadow-sm truncate">
-            LITTLE CATCH
+          <span className="font-pixel text-[9px] sm:text-[10px] text-[#f8b800] tracking-wider drop-shadow-sm truncate">
+            GO FISH
           </span>
         </button>
 

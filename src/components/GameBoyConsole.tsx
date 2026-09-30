@@ -93,8 +93,8 @@ export const GameBoyConsole: React.FC<GameBoyConsoleProps> = ({
           
           {/* Console Branding Line */}
           <div className="flex items-center justify-between px-2 mb-2">
-            <span className="font-pixel text-[9px] text-stone-400 tracking-wider">
-              LITTLE CATCH
+            <span className="font-pixel text-[9px] text-[#f8b800] tracking-wider">
+              GO FISH
             </span>
             <div className="font-pixel text-[9px] font-bold tracking-widest flex items-center gap-0.5">
               <span className="text-[#f43f5e]">C</span>

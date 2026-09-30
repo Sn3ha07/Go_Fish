@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Task, ImportanceLevel, TaskCategory, PrioritizationSettings } from '../types';
+import { Task, ImportanceLevel, TaskCategory, PrioritizationSettings, SubTask } from '../types';
 import { getFishForTask } from '../data/fishCatalog';
 import { PixelFish } from './PixelFish';
-import { Search, CheckCircle, Circle, MoreVertical, Edit3, Trash2, Play, Clock, X, Calendar } from 'lucide-react';
+import { Search, CheckCircle, Circle, MoreVertical, Edit3, Trash2, Play, Clock, X, Calendar, Plus, ListOrdered } from 'lucide-react';
 import { playTaskComplete, playReelClick } from '../utils/audio';
 
 interface TaskDeckViewProps {
@@ -34,6 +34,7 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [activeMenuTaskId, setActiveMenuTaskId] = useState<string | null>(null);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState<string>('');
 
   // Sync external add trigger from Navbar
   React.useEffect(() => {
@@ -44,7 +45,8 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
         dueDate: '',
         estimatedMinutes: 20,
         importance: 'medium',
-        category: 'work'
+        category: 'work',
+        subtasks: []
       });
       setEditingTask(null);
       setIsModalOpen(true);
@@ -53,6 +55,7 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setNewSubtaskTitle('');
     if (onCloseAddingTask) onCloseAddingTask();
   };
 
@@ -63,7 +66,8 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
     dueDate: '',
     estimatedMinutes: 20,
     importance: 'medium' as ImportanceLevel,
-    category: 'work' as TaskCategory
+    category: 'work' as TaskCategory,
+    subtasks: [] as SubTask[]
   });
 
   const categories: TaskCategory[] = ['work', 'personal', 'study', 'health', 'creative', 'home'];
@@ -82,11 +86,33 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
       dueDate: task.dueDate || '',
       estimatedMinutes: task.estimatedMinutes,
       importance: task.importance,
-      category: task.category
+      category: task.category,
+      subtasks: task.subtasks ? [...task.subtasks] : []
     });
     setEditingTask(task);
     setActiveMenuTaskId(null);
     setIsModalOpen(true);
+  };
+
+  const handleAddSubtask = () => {
+    if (!newSubtaskTitle.trim()) return;
+    const newStep: SubTask = {
+      id: `st-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      title: newSubtaskTitle.trim(),
+      completed: false
+    };
+    setForm(prev => ({
+      ...prev,
+      subtasks: [...prev.subtasks, newStep]
+    }));
+    setNewSubtaskTitle('');
+  };
+
+  const handleRemoveSubtask = (id: string) => {
+    setForm(prev => ({
+      ...prev,
+      subtasks: prev.subtasks.filter(st => st.id !== id)
+    }));
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -101,7 +127,8 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
         dueDate: form.dueDate || undefined,
         estimatedMinutes: Number(form.estimatedMinutes),
         importance: form.importance,
-        category: form.category
+        category: form.category,
+        subtasks: form.subtasks.length > 0 ? form.subtasks : undefined
       });
     } else {
       onAddTask({
@@ -111,7 +138,8 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
         estimatedMinutes: Number(form.estimatedMinutes),
         importance: form.importance,
         category: form.category,
-        completed: false
+        completed: false,
+        subtasks: form.subtasks.length > 0 ? form.subtasks : undefined
       });
     }
 
@@ -191,13 +219,15 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
               {showCompleted ? "NO COMPLETED TASKS" : "POND BASIN IS EMPTY"}
             </p>
             <p className="text-xs text-stone-400 font-sans">
-              {showCompleted ? "Complete a focus session to fill this log." : "Tap '+ New' above to hook your first task!"}
+              {showCompleted ? "Complete a focus session to fill this log." : "Tap '+ NEW' above to hook your first task!"}
             </p>
           </div>
         ) : (
           displayedTasks.map((task) => {
             const fish = getFishForTask(task);
             const isMenuOpen = activeMenuTaskId === task.id;
+            const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+            const completedSubtasksCount = hasSubtasks ? task.subtasks!.filter(st => st.completed).length : 0;
 
             return (
               <div
@@ -224,9 +254,16 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <h4 className={`text-xs sm:text-sm font-bold font-sans truncate ${task.completed ? 'line-through text-stone-500' : 'text-white'}`}>
-                      {task.title}
-                    </h4>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <h4 className={`text-xs sm:text-sm font-bold font-sans truncate ${task.completed ? 'line-through text-stone-500' : 'text-white'}`}>
+                        {task.title}
+                      </h4>
+                      {hasSubtasks && (
+                        <span className="px-1.5 py-0.2 rounded bg-[#2ec4b6]/20 text-[#2ec4b6] font-pixel text-[7.5px] uppercase shrink-0">
+                          {completedSubtasksCount}/{task.subtasks!.length} ACTIONS
+                        </span>
+                      )}
+                    </div>
 
                     {/* Metadata line */}
                     <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-sans text-stone-400 mt-0.5 truncate">
@@ -251,7 +288,7 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
                   </div>
                 </div>
 
-                {/* Right: Explicit Start/Focus Button & More Menu (NO overlapping handlers!) */}
+                {/* Right: Explicit Start/Focus Button & More Menu */}
                 <div className="flex items-center gap-1.5 shrink-0 relative">
                   {!task.completed && (
                     <button
@@ -327,7 +364,7 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
             </button>
           </div>
 
-          <form onSubmit={handleSave} className="space-y-3 my-auto py-2">
+          <form onSubmit={handleSave} className="space-y-2.5 my-auto py-2">
             <div>
               <label className="text-xs font-bold text-stone-200 block mb-1 font-sans">
                 Task Title *
@@ -338,7 +375,7 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
                 placeholder="What task needs to be reeled in?"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full h-9 px-3 bg-[#080d13] border-2 border-[#2b3e54] rounded-lg text-xs font-sans text-white focus:outline-none focus:border-[#f8b800]"
+                className="w-full h-8.5 px-3 bg-[#080d13] border-2 border-[#2b3e54] rounded-lg text-xs font-sans text-white focus:outline-none focus:border-[#f8b800]"
               />
             </div>
 
@@ -348,7 +385,7 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
                 <select
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value as any })}
-                  className="w-full h-9 px-2 bg-[#080d13] border-2 border-[#2b3e54] rounded-lg text-xs font-sans text-white capitalize"
+                  className="w-full h-8 px-2 bg-[#080d13] border-2 border-[#2b3e54] rounded-lg text-xs font-sans text-white capitalize"
                 >
                   {categories.map(c => (
                     <option key={c} value={c}>{c}</option>
@@ -361,7 +398,7 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
                 <select
                   value={form.estimatedMinutes}
                   onChange={(e) => setForm({ ...form, estimatedMinutes: Number(e.target.value) })}
-                  className="w-full h-9 px-2 bg-[#080d13] border-2 border-[#2b3e54] rounded-lg text-xs font-sans text-white"
+                  className="w-full h-8 px-2 bg-[#080d13] border-2 border-[#2b3e54] rounded-lg text-xs font-sans text-white"
                 >
                   <option value={5}>5 mins</option>
                   <option value={15}>15 mins</option>
@@ -376,7 +413,7 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
                 <select
                   value={form.importance}
                   onChange={(e) => setForm({ ...form, importance: e.target.value as any })}
-                  className="w-full h-9 px-2 bg-[#080d13] border-2 border-[#2b3e54] rounded-lg text-xs font-sans text-white capitalize"
+                  className="w-full h-8 px-2 bg-[#080d13] border-2 border-[#2b3e54] rounded-lg text-xs font-sans text-white capitalize"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -385,13 +422,71 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
               </div>
             </div>
 
+            {/* Action Steps Section (Boba the Jellyfish's domain) */}
+            <div className="p-2 rounded-lg bg-[#080d13] border border-[#2b3e54] space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-bold text-[#2ec4b6] flex items-center gap-1 font-sans">
+                  <ListOrdered className="w-3.5 h-3.5" />
+                  <span>Action Steps (Boba the Jelly)</span>
+                </label>
+                <span className="text-[8px] font-pixel text-stone-400">
+                  {form.subtasks.length} {form.subtasks.length === 1 ? 'STEP' : 'STEPS'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Add a step (e.g. Draft outline)..."
+                  value={newSubtaskTitle}
+                  onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddSubtask();
+                    }
+                  }}
+                  className="flex-1 h-7.5 px-2 bg-[#0c141d] border border-[#2b3e54] rounded text-xs font-sans text-white focus:outline-none focus:border-[#2ec4b6]"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddSubtask}
+                  className="gb-button h-7.5 px-2 text-[10px] font-pixel text-[#2ec4b6] rounded flex items-center gap-1 shrink-0"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>ADD</span>
+                </button>
+              </div>
+
+              {form.subtasks.length > 0 && (
+                <div className="space-y-1 max-h-24 overflow-y-auto pr-1">
+                  {form.subtasks.map((st, idx) => (
+                    <div
+                      key={st.id}
+                      className="flex items-center justify-between gap-1.5 px-2 py-1 rounded bg-[#0f1822] border border-[#1e2d3e] text-xs font-sans text-stone-200"
+                    >
+                      <span className="truncate">{idx + 1}. {st.title}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSubtask(st.id)}
+                        className="text-stone-500 hover:text-rose-400 p-0.5 shrink-0"
+                        title="Remove step"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div>
               <label className="text-xs font-bold text-stone-200 block mb-1 font-sans">Due Date (Optional)</label>
               <input
                 type="date"
                 value={form.dueDate}
                 onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-                className="w-full h-9 px-2 bg-[#080d13] border-2 border-[#2b3e54] rounded-lg text-xs font-sans text-white"
+                className="w-full h-8 px-2 bg-[#080d13] border-2 border-[#2b3e54] rounded-lg text-xs font-sans text-white"
               />
             </div>
 
@@ -399,14 +494,14 @@ export const TaskDeckView: React.FC<TaskDeckViewProps> = ({
               <label className="text-xs font-bold text-stone-200 block mb-1 font-sans">Notes (Optional)</label>
               <textarea
                 rows={2}
-                placeholder="Details, links or checklist..."
+                placeholder="Details, links or context..."
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 className="w-full p-2 bg-[#080d13] border-2 border-[#2b3e54] rounded-lg text-xs font-sans text-white focus:outline-none focus:border-[#f8b800] resize-none"
               />
             </div>
 
-            <div className="pt-2 flex justify-end gap-2">
+            <div className="pt-1.5 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={handleCloseModal}

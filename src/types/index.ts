@@ -10,6 +10,12 @@ export type TaskCategory =
   | 'creative' 
   | 'home';
 
+export interface SubTask {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -24,6 +30,7 @@ export interface Task {
   createdAt: string;
   caughtCount: number;
   assignedFishSpeciesId?: string;
+  subtasks?: SubTask[];
   notes?: string;
 }
 

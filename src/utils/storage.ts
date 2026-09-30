@@ -1,6 +1,13 @@
 import { Task, UserStats, UserPreferences, CaughtRecord } from '../types';
 
 const STORAGE_KEYS = {
+  TASKS: 'gofish_tasks_v3',
+  STATS: 'gofish_stats_v3',
+  PREFS: 'gofish_prefs_v3',
+  JOURNAL: 'gofish_journal_v3'
+};
+
+const LEGACY_STORAGE_KEYS = {
   TASKS: 'little_catch_tasks_v2',
   STATS: 'little_catch_stats_v2',
   PREFS: 'little_catch_prefs_v2',
@@ -24,15 +31,20 @@ export const INITIAL_TASKS: Task[] = [
   },
   {
     id: 't-2',
-    title: 'Water the plants & stretch for 5 mins',
-    description: 'Quick breather away from screens.',
-    estimatedMinutes: 5,
-    importance: 'low',
+    title: 'Morning reset routine',
+    description: 'Multi-action sequence to recharge body and mind.',
+    estimatedMinutes: 10,
+    importance: 'medium',
     category: 'health',
     completed: false,
     createdAt: new Date().toISOString(),
     caughtCount: 0,
-    assignedFishSpeciesId: 'jelly'
+    assignedFishSpeciesId: 'jelly',
+    subtasks: [
+      { id: 'st-1', title: 'Hydrate with a tall glass of water', completed: false },
+      { id: 'st-2', title: 'Stretch neck, shoulders & spine for 3m', completed: false },
+      { id: 'st-3', title: 'Review today’s top priority tasks', completed: false }
+    ]
   },
   {
     id: 't-3',
@@ -48,8 +60,8 @@ export const INITIAL_TASKS: Task[] = [
   },
   {
     id: 't-4',
-    title: 'Write draft for creative essay',
-    description: 'Jot down initial thoughts and outline.',
+    title: 'Write draft for creative project',
+    description: 'Sunk teeth into big ideas and concept storyboard.',
     dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
     estimatedMinutes: 45,
     importance: 'high',
@@ -57,13 +69,25 @@ export const INITIAL_TASKS: Task[] = [
     completed: false,
     createdAt: new Date().toISOString(),
     caughtCount: 0,
-    assignedFishSpeciesId: 'clown'
+    assignedFishSpeciesId: 'shark'
+  },
+  {
+    id: 't-5',
+    title: 'Extended deep cleanup & system backup',
+    description: 'Long multi-step session to organize project archives.',
+    estimatedMinutes: 35,
+    importance: 'high',
+    category: 'work',
+    completed: false,
+    createdAt: new Date().toISOString(),
+    caughtCount: 0,
+    assignedFishSpeciesId: 'longfish'
   }
 ];
 
 export const INITIAL_STATS: UserStats = {
-  pearls: 45,
-  totalCompleted: 3
+  pearls: 60,
+  totalCompleted: 4
 };
 
 export const INITIAL_PREFERENCES: UserPreferences = {
@@ -82,13 +106,13 @@ export const INITIAL_JOURNAL: CaughtRecord[] = [
   {
     id: 'log-1',
     taskId: 'seed-1',
-    taskTitle: 'Set up physical NFC fish tokens',
+    taskTitle: 'Plan quarterly project roadmap',
     taskCategory: 'work',
-    fishSpeciesId: 'puffer',
-    fishName: 'Puff',
+    fishSpeciesId: 'longfish',
+    fishName: 'Noodle',
     caughtAt: new Date(Date.now() - 3600000 * 5).toISOString(),
     pearlsEarned: 15,
-    selectionReason: 'Big task reeled in!'
+    selectionReason: 'Extended task reeled in by Noodle!'
   },
   {
     id: 'log-2',
@@ -100,18 +124,50 @@ export const INITIAL_JOURNAL: CaughtRecord[] = [
     caughtAt: new Date(Date.now() - 3600000 * 24).toISOString(),
     pearlsEarned: 10,
     selectionReason: 'Quick 10m sprint'
+  },
+  {
+    id: 'log-3',
+    taskId: 'seed-3',
+    taskTitle: 'Design playful brand moodboard',
+    taskCategory: 'creative',
+    fishSpeciesId: 'shark',
+    fishName: 'Chomp',
+    caughtAt: new Date(Date.now() - 3600000 * 12).toISOString(),
+    pearlsEarned: 20,
+    selectionReason: 'Chomp took a big bite out of creative design!'
   }
 ];
+
+function normalizeFishId(id?: string): string | undefined {
+  if (id === 'clown') return 'shark';
+  if (id === 'puffer') return 'longfish';
+  return id;
+}
 
 export function loadTasks(): Task[] {
   if (typeof window === 'undefined') return INITIAL_TASKS;
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.TASKS);
     if (!raw) {
+      // Check legacy migration
+      const legacy = localStorage.getItem(LEGACY_STORAGE_KEYS.TASKS);
+      if (legacy) {
+        const parsed: Task[] = JSON.parse(legacy);
+        const migrated = parsed.map(t => ({
+          ...t,
+          assignedFishSpeciesId: normalizeFishId(t.assignedFishSpeciesId)
+        }));
+        saveTasks(migrated);
+        return migrated;
+      }
       saveTasks(INITIAL_TASKS);
       return INITIAL_TASKS;
     }
-    return JSON.parse(raw);
+    const parsed: Task[] = JSON.parse(raw);
+    return parsed.map(t => ({
+      ...t,
+      assignedFishSpeciesId: normalizeFishId(t.assignedFishSpeciesId)
+    }));
   } catch {
     return INITIAL_TASKS;
   }
@@ -129,7 +185,7 @@ export function saveTasks(tasks: Task[]) {
 export function loadStats(): UserStats {
   if (typeof window === 'undefined') return INITIAL_STATS;
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.STATS);
+    const raw = localStorage.getItem(STORAGE_KEYS.STATS) || localStorage.getItem(LEGACY_STORAGE_KEYS.STATS);
     if (!raw) return INITIAL_STATS;
     return JSON.parse(raw);
   } catch {
@@ -149,7 +205,7 @@ export function saveStats(stats: UserStats) {
 export function loadPreferences(): UserPreferences {
   if (typeof window === 'undefined') return INITIAL_PREFERENCES;
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.PREFS);
+    const raw = localStorage.getItem(STORAGE_KEYS.PREFS) || localStorage.getItem(LEGACY_STORAGE_KEYS.PREFS);
     if (!raw) return INITIAL_PREFERENCES;
     return JSON.parse(raw);
   } catch {
@@ -170,8 +226,16 @@ export function loadJournal(): CaughtRecord[] {
   if (typeof window === 'undefined') return INITIAL_JOURNAL;
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.JOURNAL);
-    if (!raw) return INITIAL_JOURNAL;
-    return JSON.parse(raw);
+    if (!raw) {
+      saveJournal(INITIAL_JOURNAL);
+      return INITIAL_JOURNAL;
+    }
+    const parsed: CaughtRecord[] = JSON.parse(raw);
+    return parsed.map(j => ({
+      ...j,
+      fishSpeciesId: normalizeFishId(j.fishSpeciesId) || 'goldie',
+      fishName: j.fishSpeciesId === 'clown' ? 'Chomp' : j.fishSpeciesId === 'puffer' ? 'Noodle' : j.fishName
+    }));
   } catch {
     return INITIAL_JOURNAL;
   }
@@ -181,6 +245,16 @@ export function saveJournal(journal: CaughtRecord[]) {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEYS.JOURNAL, JSON.stringify(journal));
+  } catch {
+    // Ignore
+  }
+}
+
+export function resetAllStorage() {
+  if (typeof window === 'undefined') return;
+  try {
+    Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
+    Object.values(LEGACY_STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
   } catch {
     // Ignore
   }

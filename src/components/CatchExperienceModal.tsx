@@ -73,6 +73,27 @@ export const CatchExperienceModal: React.FC<CatchExperienceModalProps> = ({
           </p>
         )}
 
+        {task.subtasks && task.subtasks.length > 0 && (
+          <div className="pt-2 border-t border-[#23354a] space-y-1">
+            <span className="font-pixel text-[8px] text-[#2ec4b6] uppercase block">
+              ⚡ MULTI-ACTION STEPS ({task.subtasks.length}):
+            </span>
+            <div className="space-y-0.5">
+              {task.subtasks.slice(0, 3).map((st) => (
+                <div key={st.id} className="text-xs text-stone-300 font-sans flex items-center gap-1.5 truncate">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#2ec4b6] shrink-0" />
+                  <span className="truncate">{st.title}</span>
+                </div>
+              ))}
+              {task.subtasks.length > 3 && (
+                <span className="text-[10px] text-stone-400 font-sans pl-3 block">
+                  +{task.subtasks.length - 3} more actions
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         {task.dueDate && (
           <div className="flex items-center gap-1.5 text-xs text-amber-300 font-sans pt-1">
             <Calendar className="w-3.5 h-3.5" />

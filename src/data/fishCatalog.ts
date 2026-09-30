@@ -24,7 +24,8 @@ export const FISH_SPECIES: FishSpecies[] = CUTE_FISH_ROSTER.map(f => ({
 }));
 
 export function getFishById(id: string): FishSpecies {
-  return FISH_SPECIES.find(f => f.id === id) || FISH_SPECIES[0];
+  const normalized = id === 'puffer' ? 'longfish' : id === 'clown' ? 'shark' : id;
+  return FISH_SPECIES.find(f => f.id === normalized) || FISH_SPECIES[0];
 }
 
 export function getFishByNfcUid(uid: string): FishSpecies | undefined {
@@ -36,6 +37,13 @@ export function getFishForTask(task: Task): FishSpecies {
   if (task.assignedFishSpeciesId) {
     const matched = FISH_SPECIES.find(f => f.id === task.assignedFishSpeciesId);
     if (matched) return matched;
+    if (task.assignedFishSpeciesId === 'puffer') return getFishById('longfish');
+    if (task.assignedFishSpeciesId === 'clown') return getFishById('shark');
+  }
+
+  // Multi-action / subtask checklists -> Boba the Jelly
+  if (task.subtasks && task.subtasks.length > 0) {
+    return getFishById('jelly');
   }
 
   // Quick bite <= 15m -> Goldie
@@ -48,19 +56,19 @@ export function getFishForTask(task: Task): FishSpecies {
     return getFishById('bluefin');
   }
 
-  // Health / wellness -> Boba the Jelly
-  if (task.category === 'health' || task.importance === 'low') {
+  // Creative & bold projects -> Chomp the Shark
+  if (task.category === 'creative') {
+    return getFishById('shark');
+  }
+
+  // Multi-step study / structured health tasks -> Boba the Jelly
+  if (task.category === 'study') {
     return getFishById('jelly');
   }
 
-  // Creative -> Pip the Clownfish
-  if (task.category === 'creative') {
-    return getFishById('clown');
-  }
-
-  // High importance -> Chubby Puff
+  // Extended / high importance -> Noodle the Long Fish
   if (task.importance === 'high') {
-    return getFishById('puffer');
+    return getFishById('longfish');
   }
 
   // Deep heavy focus -> Moby the Whale
@@ -88,7 +96,11 @@ export function selectCatchTask(
   // If a specific fish was scanned / hooked:
   if (specificFish) {
     // 1. Check if pinned
-    const pinned = uncompleted.find(t => t.assignedFishSpeciesId === specificFish.id);
+    const pinned = uncompleted.find(t => 
+      t.assignedFishSpeciesId === specificFish.id ||
+      (specificFish.id === 'longfish' && t.assignedFishSpeciesId === 'puffer') ||
+      (specificFish.id === 'shark' && t.assignedFishSpeciesId === 'clown')
+    );
     if (pinned) {
       return {
         task: pinned,
@@ -103,11 +115,11 @@ export function selectCatchTask(
       candidates = uncompleted.filter(t => t.estimatedMinutes <= 15);
     } else if (specificFish.id === 'bluefin') {
       candidates = uncompleted.filter(t => !!t.dueDate);
-    } else if (specificFish.id === 'puffer') {
-      candidates = uncompleted.filter(t => t.importance === 'high');
+    } else if (specificFish.id === 'longfish' || specificFish.id === 'puffer') {
+      candidates = uncompleted.filter(t => t.importance === 'high' || t.estimatedMinutes >= 30);
     } else if (specificFish.id === 'jelly') {
-      candidates = uncompleted.filter(t => t.category === 'health' || t.importance === 'low');
-    } else if (specificFish.id === 'clown') {
+      candidates = uncompleted.filter(t => (t.subtasks && t.subtasks.length > 0) || t.category === 'study');
+    } else if (specificFish.id === 'shark' || specificFish.id === 'clown') {
       candidates = uncompleted.filter(t => t.category === 'creative' || t.category === 'personal');
     }
 

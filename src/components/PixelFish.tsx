@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type CuteFishType = 'goldie' | 'puffer' | 'bluefin' | 'jelly' | 'clown' | 'whale';
+export type CuteFishType = 'goldie' | 'longfish' | 'bluefin' | 'jelly' | 'shark' | 'whale' | 'puffer' | 'clown';
 
 export interface CuteFishData {
   id: string;
@@ -27,14 +27,14 @@ export const CUTE_FISH_ROSTER: CuteFishData[] = [
     nfcUid: 'TAG-01'
   },
   {
-    id: 'puffer',
-    name: 'Puff',
-    type: 'puffer',
-    color: '#ff6584',
-    bellyColor: '#ffd1dc',
-    accentColor: '#c72c48',
-    personality: 'Chubby & Cheerful',
-    tag: 'Big Tasks',
+    id: 'longfish',
+    name: 'Noodle',
+    type: 'longfish',
+    color: '#fbbf24',
+    bellyColor: '#fef3c7',
+    accentColor: '#d97706',
+    personality: 'Slender & Patient',
+    tag: 'Extended Tasks',
     nfcUid: 'TAG-02'
   },
   {
@@ -55,19 +55,19 @@ export const CUTE_FISH_ROSTER: CuteFishData[] = [
     color: '#2ec4b6',
     bellyColor: '#cbf3f0',
     accentColor: '#0f766e',
-    personality: 'Chill & Relaxed',
-    tag: 'Health & Breaks',
+    personality: 'Multi-Action & Organized',
+    tag: 'Multi-Action Steps',
     nfcUid: 'TAG-04'
   },
   {
-    id: 'clown',
-    name: 'Pip',
-    type: 'clown',
-    color: '#ff7a00',
-    bellyColor: '#ffffff',
-    accentColor: '#2b2d42',
-    personality: 'Curious & Playful',
-    tag: 'Creative Work',
+    id: 'shark',
+    name: 'Chomp',
+    type: 'shark',
+    color: '#3b82f6',
+    bellyColor: '#f8fafc',
+    accentColor: '#1d4ed8',
+    personality: 'Bold & Fearless',
+    tag: 'Creative & Big Bites',
     nfcUid: 'TAG-05'
   },
   {
@@ -108,35 +108,71 @@ export const PixelFish: React.FC<PixelFishProps> = ({
   // Chunky, ultra-cute 8-bit sprites (16x16 grid pixels)
   const render8BitSprite = () => {
     switch (type) {
+      case 'longfish':
       case 'puffer':
         return (
           <g>
-            {/* Chunky round body */}
-            <rect x="3" y="4" width="10" height="8" fill="#ff6584" />
-            <rect x="4" y="3" width="8" height="10" fill="#ff6584" />
-            <rect x="5" y="2" width="6" height="12" fill="#ff6584" />
+            {/* Noodle: Long slender ribbon/loach body */}
+            <rect x="2" y="7" width="11" height="4" fill="#fbbf24" />
+            <rect x="3" y="6" width="10" height="5" fill="#fbbf24" />
+            <rect x="4" y="8" width="8" height="3" fill="#fef3c7" />
 
-            {/* Rosy belly */}
-            <rect x="4" y="8" width="7" height="3" fill="#ffb4c2" />
+            {/* Wavy dorsal ribbon fin along back */}
+            <rect x="4" y="5" width="8" height="1" fill="#d97706" />
+            <rect x="6" y="4" width="4" height="1" fill="#f59e0b" />
 
-            {/* Cute spikes */}
-            <rect x="2" y="5" width="1" height="2" fill="#d93d5e" />
-            <rect x="13" y="5" width="1" height="2" fill="#d93d5e" />
-            <rect x="7" y="1" width="2" height="1" fill="#d93d5e" />
-            <rect x="7" y="14" width="2" height="1" fill="#d93d5e" />
+            {/* Slender wavy ribbon tail */}
+            <rect x="0" y="8" width="2" height="2" fill="#d97706" />
+            <rect x="1" y="7" width="2" height="4" fill="#fbbf24" />
 
-            {/* Big cute eyes (●) */}
-            <rect x="9" y="5" width="2" height="2" fill="#18181b" />
+            {/* Cute whiskers / barbels at nose */}
+            <rect x="13" y="6" width="2" height="1" fill="#d97706" />
+            <rect x="13" y="9" width="2" height="1" fill="#d97706" />
+
+            {/* Big sparkly eye (●) */}
+            <rect x="10" y="6" width="2" height="2" fill="#18181b" />
+            <rect x="10" y="6" width="1" height="1" fill="#ffffff" />
+
+            {/* Rosy cheek */}
+            <rect x="10" y="9" width="1" height="1" fill="#f43f5e" />
+
+            {/* Cute smile */}
+            <rect x="12" y="8" width="1" height="1" fill="#b45309" />
+          </g>
+        );
+
+      case 'shark':
+      case 'clown':
+        return (
+          <g>
+            {/* Chomp: Sleek 8-bit oceanic shark body */}
+            <rect x="2" y="5" width="10" height="6" fill="#3b82f6" />
+            <rect x="3" y="4" width="9" height="7" fill="#3b82f6" />
+
+            {/* Crisp white shark underbelly */}
+            <rect x="4" y="8" width="8" height="3" fill="#f8fafc" />
+
+            {/* Iconic sharp dorsal fin */}
+            <rect x="6" y="1" width="2" height="3" fill="#1d4ed8" />
+            <rect x="7" y="2" width="2" height="3" fill="#3b82f6" />
+            <rect x="8" y="3" width="1" height="2" fill="#1d4ed8" />
+
+            {/* Classic shark crescent tail fin */}
+            <rect x="0" y="2" width="2" height="4" fill="#1d4ed8" />
+            <rect x="1" y="5" width="2" height="4" fill="#3b82f6" />
+            <rect x="0" y="8" width="2" height="3" fill="#1d4ed8" />
+
+            {/* Lower pectoral fin */}
+            <rect x="6" y="10" width="3" height="2" fill="#1d4ed8" />
+
+            {/* Determined sparkly eye */}
+            <rect x="9" y="5" width="2" height="2" fill="#0f172a" />
             <rect x="9" y="5" width="1" height="1" fill="#ffffff" />
 
-            {/* Blush */}
-            <rect x="9" y="8" width="2" height="1" fill="#ff2a55" />
-
-            {/* Kissy mouth (3) */}
-            <rect x="12" y="7" width="1" height="1" fill="#18181b" />
-
-            {/* Tiny flapping fin */}
-            <rect x="5" y="6" width="2" height="2" fill="#ffd1dc" />
+            {/* Cute sharp white tooth grin */}
+            <rect x="11" y="8" width="1" height="1" fill="#ffffff" />
+            <rect x="12" y="7" width="1" height="1" fill="#ffffff" />
+            <rect x="11" y="9" width="2" height="1" fill="#1e3a8a" />
           </g>
         );
 
@@ -189,31 +225,6 @@ export const PixelFish: React.FC<PixelFishProps> = ({
             {/* Blushing cheeks */}
             <rect x="4" y="6" width="1" height="1" fill="#ff6584" />
             <rect x="11" y="6" width="1" height="1" fill="#ff6584" />
-          </g>
-        );
-
-      case 'clown':
-        return (
-          <g>
-            {/* Orange body */}
-            <rect x="3" y="5" width="10" height="6" fill="#ff7a00" />
-            <rect x="4" y="4" width="8" height="8" fill="#ff7a00" />
-
-            {/* White bold stripes */}
-            <rect x="5" y="4" width="2" height="8" fill="#ffffff" />
-            <rect x="9" y="5" width="1" height="6" fill="#ffffff" />
-
-            {/* Black borders on stripes */}
-            <rect x="4" y="4" width="1" height="8" fill="#18181b" />
-            <rect x="7" y="4" width="1" height="8" fill="#18181b" />
-
-            {/* Rounded tail */}
-            <rect x="1" y="5" width="2" height="6" fill="#ff7a00" />
-            <rect x="2" y="6" width="1" height="4" fill="#ffffff" />
-
-            {/* Big cute eye */}
-            <rect x="10" y="6" width="2" height="2" fill="#18181b" />
-            <rect x="10" y="6" width="1" height="1" fill="#ffffff" />
           </g>
         );
 
