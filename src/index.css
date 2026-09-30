@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-pixel: 'Press Start 2P', monospace;
+    --font-retro: 'Silkscreen', monospace;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #0c0e12;
+    color: #e2edf8;
+    overflow-x: hidden;
+  }
+}
+
+.font-pixel {
+  font-family: var(--font-pixel);
+  letter-spacing: -0.05em;
+}
+
+.font-retro {
+  font-family: var(--font-retro);
+}
+
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Authentic Game Boy Color UI Windows & Buttons */
+.gb-window {
+  background-color: #141f2c;
+  border: 2px solid #2d4157;
+  box-shadow: inset 1px 1px 0px 0px #3d5875, inset -1px -1px 0px 0px #0a1017, 1px 1px 0px 0px #060a0e;
+}
+
+.gb-panel {
+  background-color: #0f1822;
+  border: 2px solid #27384c;
+}
+
+.gb-button {
+  background-color: #1b2838;
+  color: #e2edf8;
+  border: 2px solid #364e6b;
+  box-shadow: 0 2px 0 0 #080d13;
+  transition: transform 0.05s ease, box-shadow 0.05s ease;
+}
+
+.gb-button:hover {
+  background-color: #24354a;
+  border-color: #48688e;
+}
+
+.gb-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 0 #080d13;
+}
+
+.gb-button-primary {
+  background-color: #f59e0b;
+  color: #0b1219;
+  border: 2px solid #fde68a;
+  box-shadow: 0 2px 0 0 #78350f;
+}
+
+.gb-button-primary:hover {
+  background-color: #fbbf24;
+}
+
+.gb-button-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 0 #78350f;
+}
+
+/* Subtle Game Boy LCD Dot Matrix Scanlines */
+.gb-scanlines {
+  background: linear-gradient(
+    rgba(14, 22, 31, 0) 50%, 
+    rgba(0, 0, 0, 0.15) 50%
+  );
+  background-size: 100% 2px;
+  pointer-events: none;
+}
+
+/* 8-bit chunky retro button effect */
+.btn-8bit {
+  box-shadow: 0 3px 0 0 #000000;
+  transition: transform 0.05s ease, box-shadow 0.05s ease;
+}
+
+.btn-8bit:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 0 #000000;
+}
+
+/* Gentle floating bob animation */
+@keyframes cuteBob {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes cutePop {
+  0% { transform: scale(0.7) translateY(12px); opacity: 0; }
+  70% { transform: scale(1.05) translateY(-3px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes plantSway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(6deg) skewX(2deg); }
+}
+
+@keyframes plantSwayOpposite {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-5deg) skewX(-2deg); }
+}
+
+@keyframes bubbleFloat {
+  0% { transform: translateY(0) scale(0.8); opacity: 0; }
+  20% { opacity: 0.7; }
+  80% { opacity: 0.7; }
+  100% { transform: translateY(-70px) scale(1.1); opacity: 0; }
+}
+
+@keyframes waterShimmer {
+  0%, 100% { opacity: 0.15; transform: scaleX(0.95); }
+  50% { opacity: 0.45; transform: scaleX(1.05); }
+}
+
+.animate-bob {
+  animation: cuteBob 2.4s ease-in-out infinite;
+}
+
+.animate-pop {
+  animation: cutePop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-sway {
+  transform-origin: bottom center;
+  animation: plantSway 3.8s ease-in-out infinite;
+}
+
+.animate-sway-slow {
+  transform-origin: bottom center;
+  animation: plantSwayOpposite 4.6s ease-in-out infinite;
+}
+
+.animate-bubble-1 {
+  animation: bubbleFloat 4.2s ease-in infinite;
+}
+
+.animate-bubble-2 {
+  animation: bubbleFloat 5.1s ease-in infinite 2.1s;
+}
+
+.animate-bubble-3 {
+  animation: bubbleFloat 4.7s ease-in infinite 1.2s;
+}
+
+.animate-shimmer {
+  animation: waterShimmer 3s ease-in-out infinite;
+}
+
+/* Crisp custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0c141d;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a3c50;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3e5672;
+}

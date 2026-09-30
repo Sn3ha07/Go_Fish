@@ -1,0 +1,6 @@
+{
+  "name": "Little Catch — Tangible Gamified Fishing Task Manager",
+  "description": "A cozy pixel-art task manager combining a living digital ocean with tangible physical NFC fishing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
