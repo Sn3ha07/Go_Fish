@@ -34,6 +34,7 @@ export function getFishByNfcUid(uid: string): FishSpecies | undefined {
 }
 
 export function getFishForTask(task: Task): FishSpecies {
+  // 1. Explicit user assignment
   if (task.assignedFishSpeciesId) {
     const matched = FISH_SPECIES.find(f => f.id === task.assignedFishSpeciesId);
     if (matched) return matched;
@@ -41,39 +42,39 @@ export function getFishForTask(task: Task): FishSpecies {
     if (task.assignedFishSpeciesId === 'clown') return getFishById('shark');
   }
 
-  // Multi-action / subtask checklists -> Boba the Jelly
+  // 2. Multi-Action Checklist / Staged Tasks -> Boba the Jellyfish
   if (task.subtasks && task.subtasks.length > 0) {
     return getFishById('jelly');
   }
 
-  // Quick bite <= 15m -> Goldie
-  if (task.estimatedMinutes <= 15) {
-    return getFishById('goldie');
-  }
-
-  // Urgent deadline -> Bluefin
+  // 3. Urgent Deadlines (due date set) -> Finn the Bluefin
   if (task.dueDate) {
     return getFishById('bluefin');
   }
 
-  // Creative & bold projects -> Chomp the Shark
-  if (task.category === 'creative') {
+  // 4. Hard / High-Stakes / Big Bites / Creative -> Chomp the Shark
+  if (task.importance === 'high' || task.category === 'creative') {
     return getFishById('shark');
   }
 
-  // Multi-step study / structured health tasks -> Boba the Jelly
-  if (task.category === 'study') {
-    return getFishById('jelly');
+  // 5. Deep Marathon Immersion (>= 45m) -> Moby the Whale
+  if (task.estimatedMinutes >= 45) {
+    return getFishById('whale');
   }
 
-  // Extended / high importance -> Noodle the Long Fish
-  if (task.importance === 'high') {
+  // 6. Extended Duration Tasks (25m - 44m) -> Noodle the Long Fish
+  if (task.estimatedMinutes >= 25) {
     return getFishById('longfish');
   }
 
-  // Deep heavy focus -> Moby the Whale
-  if (task.estimatedMinutes >= 45) {
-    return getFishById('whale');
+  // 7. Quick Sprint (<= 15m) -> Goldie
+  if (task.estimatedMinutes <= 15) {
+    return getFishById('goldie');
+  }
+
+  // 8. Study / structured category default -> Boba
+  if (task.category === 'study') {
+    return getFishById('jelly');
   }
 
   return getFishById('goldie');

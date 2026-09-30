@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Task, FishSpecies } from '../types';
 import { PixelFish } from './PixelFish';
-import { Clock, ArrowRight, RotateCcw, Calendar } from 'lucide-react';
-import { playCatchFanfare, playThrowBack } from '../utils/audio';
+import { Clock, ArrowRight, RotateCcw, Calendar, Link2, Check } from 'lucide-react';
+import { playCatchFanfare, playThrowBack, playReelClick } from '../utils/audio';
+import { copyChompDirectUrl } from '../utils/chompLinks';
 
 interface CatchExperienceModalProps {
   task: Task;
@@ -21,6 +22,8 @@ export const CatchExperienceModal: React.FC<CatchExperienceModalProps> = ({
   onKeepCatch,
   onThrowBack
 }) => {
+  const [copied, setCopied] = useState<boolean>(false);
+
   const handleThrow = () => {
     playThrowBack(soundEnabled);
     onThrowBack();
@@ -31,9 +34,35 @@ export const CatchExperienceModal: React.FC<CatchExperienceModalProps> = ({
     onKeepCatch();
   };
 
+  const handleCopyChompLink = async () => {
+    const ok = await copyChompDirectUrl(task.id);
+    if (ok) {
+      playReelClick(soundEnabled);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
     <div className="absolute inset-0 z-30 bg-[#0d1620]/95 gb-window flex flex-col justify-between p-3.5 sm:p-4 overflow-y-auto animate-pop select-none">
       
+      {/* Discrete reference copy icon for Chomp */}
+      {fish.id === 'shark' && (
+        <button
+          type="button"
+          onClick={handleCopyChompLink}
+          className="absolute top-2.5 right-2.5 p-1.5 rounded-lg bg-[#091017]/70 hover:bg-[#162536] text-stone-500 hover:text-[#60a5fa] border border-[#1e2d3e] transition-colors cursor-pointer"
+          title={copied ? "Copied Chomp link!" : "Copy Chomp direct link"}
+          aria-label="Copy Chomp link"
+        >
+          {copied ? (
+            <Check className="w-3.5 h-3.5 text-[#78d8a0]" />
+          ) : (
+            <Link2 className="w-3.5 h-3.5" />
+          )}
+        </button>
+      )}
+
       {/* Top Catch Header: Classic RPG Encounter Style */}
       <div className="text-center space-y-2 pt-1">
         <div className="w-16 h-16 mx-auto flex items-center justify-center bg-[#091017] rounded-xl border-2 border-[#2b3e54] shadow-inner">

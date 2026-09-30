@@ -370,12 +370,6 @@ export const PondView: React.FC<PondViewProps> = ({
                   </div>
                 ))}
               </div>
-              {selectedFish.id === 'shark' && (
-                <div className="p-1.5 rounded bg-[#091524] border border-[#2563eb]/40 text-[9px] font-mono text-[#93c5fd] flex items-center justify-between gap-1 mt-1">
-                  <span className="truncate">Direct URL: ?chomp={speciesTasks[0].id}</span>
-                  <span className="font-pixel text-[7.5px] text-[#f8b800] uppercase shrink-0">Skips Dashboard</span>
-                </div>
-              )}
             </div>
           ) : (
             <div className="text-[11px] text-stone-400 font-sans italic pt-1 border-t border-[#1a293a]">

@@ -168,7 +168,12 @@ export default function App() {
 
           if (chompTask) {
             const fish = getFishForTask(chompTask);
-            setFocusedTask({ task: chompTask, fish });
+            // Open directly into the Cast Screen (★ HOOKED CHOMP! ★)
+            setActiveCatch({
+              task: chompTask,
+              fish,
+              reason: 'Hooked Chomp! Creative & high-stakes challenge ready for focus.'
+            });
             // Reflect standard query param in address bar
             const currentUrl = new URL(window.location.href);
             if (currentUrl.searchParams.get('chomp') !== chompTask.id) {
@@ -187,16 +192,20 @@ export default function App() {
     return () => window.removeEventListener('popstate', handleChompDeepLink);
   }, [tasks]);
 
-  // Keep URL updated when focusedTask changes
+  // Keep URL updated when focusedTask or activeCatch changes
   useEffect(() => {
     try {
       const url = new URL(window.location.href);
-      if (focusedTask && isChompTask(focusedTask.task)) {
-        if (url.searchParams.get('chomp') !== focusedTask.task.id) {
-          url.searchParams.set('chomp', focusedTask.task.id);
-          window.history.replaceState({ chompTaskId: focusedTask.task.id }, '', url.toString());
+      const activeChompTask = 
+        (activeCatch && isChompTask(activeCatch.task)) ? activeCatch.task :
+        (focusedTask && isChompTask(focusedTask.task)) ? focusedTask.task : null;
+
+      if (activeChompTask) {
+        if (url.searchParams.get('chomp') !== activeChompTask.id) {
+          url.searchParams.set('chomp', activeChompTask.id);
+          window.history.replaceState({ chompTaskId: activeChompTask.id }, '', url.toString());
         }
-      } else if (!focusedTask && url.searchParams.has('chomp')) {
+      } else if (!focusedTask && !activeCatch && url.searchParams.has('chomp')) {
         url.searchParams.delete('chomp');
         const cleanUrl = url.pathname + (url.search ? url.search : '') + (url.hash ? url.hash : '');
         window.history.replaceState({}, '', cleanUrl);
@@ -204,7 +213,7 @@ export default function App() {
     } catch (e) {
       // Ignore if URL modification fails in some iframe environments
     }
-  }, [focusedTask]);
+  }, [focusedTask, activeCatch]);
 
   // Audio toggle
   const handleToggleSound = useCallback(() => {
@@ -298,6 +307,16 @@ export default function App() {
 
   const handleThrowBack = () => {
     setActiveCatch(null);
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('chomp')) {
+        url.searchParams.delete('chomp');
+        const cleanUrl = url.pathname + (url.search ? url.search : '') + (url.hash ? url.hash : '');
+        window.history.replaceState({}, '', cleanUrl);
+      }
+    } catch (e) {
+      // Ignore
+    }
   };
 
   // Complete Task

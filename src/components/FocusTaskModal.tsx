@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Task, FishSpecies, SubTask } from '../types';
 import { PixelFish } from './PixelFish';
-import { Play, Pause, X, Check, Plus, CheckCircle, Circle, ListOrdered, Link2, Share2, Sparkles } from 'lucide-react';
+import { Play, Pause, X, Check, Plus, CheckCircle, Circle, ListOrdered } from 'lucide-react';
 import { playTaskComplete, playReelClick } from '../utils/audio';
-import { copyChompDirectUrl, getChompDirectUrl } from '../utils/chompLinks';
 
 interface FocusTaskModalProps {
   task: Task;
@@ -25,16 +24,6 @@ export const FocusTaskModal: React.FC<FocusTaskModalProps> = ({
   const [subtasks, setSubtasks] = useState<SubTask[]>(task.subtasks || []);
   const [newStepText, setNewStepText] = useState<string>('');
   const [showAddStep, setShowAddStep] = useState<boolean>(false);
-  const [copiedChompLink, setCopiedChompLink] = useState<boolean>(false);
-
-  const handleCopyChompLink = async () => {
-    const ok = await copyChompDirectUrl(task.id);
-    if (ok) {
-      playReelClick(soundEnabled);
-      setCopiedChompLink(true);
-      setTimeout(() => setCopiedChompLink(false), 2500);
-    }
-  };
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -97,12 +86,6 @@ export const FocusTaskModal: React.FC<FocusTaskModalProps> = ({
               BOBA's ACTIONS
             </span>
           )}
-          {fish.id === 'shark' && (
-            <span className="font-pixel text-[8px] px-1.5 py-0.5 rounded bg-[#2563eb]/20 text-[#60a5fa] border border-[#2563eb]/40 flex items-center gap-1">
-              <Sparkles className="w-2.5 h-2.5 text-[#f8b800]" />
-              CHOMP DIRECT
-            </span>
-          )}
         </div>
         <button
           onClick={onClose}
@@ -113,42 +96,6 @@ export const FocusTaskModal: React.FC<FocusTaskModalProps> = ({
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
-
-      {/* Distinct Chomp Direct Link Bar */}
-      {fish.id === 'shark' && (
-        <div className="mt-1.5 mb-1 p-2 rounded-xl bg-[#091524] border border-[#2563eb]/50 flex items-center justify-between gap-2 text-left shrink-0 shadow-inner">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1">
-              <Link2 className="w-3 h-3 text-[#60a5fa] shrink-0" />
-              <span className="font-pixel text-[8px] text-[#60a5fa] uppercase tracking-wide truncate">
-                DISTINCT CHOMP URL
-              </span>
-            </div>
-            <span className="text-[10px] font-mono text-stone-300 truncate block mt-0.5">
-              {getChompDirectUrl(task.id)}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleCopyChompLink}
-            className="gb-button min-h-[26px] px-2 py-1 text-[8px] font-pixel text-[#60a5fa] hover:text-white rounded-lg flex items-center gap-1 shrink-0 cursor-pointer shadow-sm"
-            title="Copy direct URL to this Chomp task"
-          >
-            {copiedChompLink ? (
-              <>
-                <Check className="w-3 h-3 text-[#78d8a0]" />
-                <span className="text-[#78d8a0]">COPIED!</span>
-              </>
-            ) : (
-              <>
-                <Share2 className="w-3 h-3" />
-                <span>COPY LINK</span>
-              </>
-            )}
-          </button>
-        </div>
-      )}
 
       {/* Main Focus Body */}
       <div className="space-y-1.5 text-center my-auto py-1">
